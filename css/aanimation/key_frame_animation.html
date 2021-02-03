@@ -1,0 +1,52 @@
+<html>
+<head>
+<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, minimal-ui">
+<style>
+  body {
+    font-family: sans-serif;
+  }
+  @keyframes mover {
+    0% { transform: translate(0, 0); }
+    16.7% { transform: translate(100%, 100%); }
+    33.3% { transform: translate(0, 200%); }
+    50% { transform: translate(100%, 200%); }
+    66.7% { transform: translate(0,100%); }
+    83.3% { transform: translate(100%, 0); }
+    100% { transform: translate(0, 0); }
+  }
+  @keyframes short_mover {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(100%, 100%); }
+    50% { transform: translate(0, 100%); }
+    75% { transform: translate(100%, 0); }
+    100% { transform: translate(0, 0); }
+  }
+  @keyframes tranformer {
+    0% { transform: scale(1);}
+    50% { transform: scale(2);}
+    100% { transform: scale(1);}
+  }
+  .panel {
+    animation: short_mover 5s linear infinite;
+  }
+  .panel {
+    max-width: 50vh;
+    max-height: 50vw;
+    width: 50%;
+    height: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #dbcbeb;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+</style>
+</head>
+<body>
+  <div class='panel'>
+    Moving Characters
+  </div>
+</body>
+</html>
