@@ -1,0 +1,86 @@
+<html>
+<head>
+<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, minimal-ui">
+<meta charset='utf-8'>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: flex-start;
+    height: 100%;
+    margin : 0;
+  }
+  body > div {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  table {
+    border: solid 2px;
+  }
+
+  table td {
+    border: solid 1px;
+  }
+
+  table tr.clicked {
+    background: #cbebeb;
+  }
+
+</style>
+<script>
+  var deepLinks = [
+    {"name" : "官方DEMO", "link" : "hwfastapp://com.huawei.quickapp.sample"},
+    {"name" : "携程旅行", "link" : "hwfastapp://com.ctrip.app/"},
+    {"name" : "菜鸟果果", "link" : "hwfastapp://com.cainiao.guoguoquickapp/"},
+    {"name" : "斗地主",   "link" : "hwfastapp://com.hxddz.kyx.huawei/"},
+    {"name" : "拖拉机",   "link" : "hwfastapp://com.bianfeng.tlj/"},
+    {"name" : "贪吃蛇",   "link" : "hwfastapp://com.igame.xmmf.wiqzgrpk.huawei"},
+    {"name" : "滔客说",   "link" : "hwfastapp://com.huawei.cloudtwopizza.storm.digixtalk.quickapp"},
+    {"name" : "华为视频", "link" : "hwfastapp://com.huawei.himovie.web.fastapp?systemPromt=0"},
+    {"name" : "华为阅读", "link" : "hwfastapp://com.huawei.hwread.aa/?from=com.huawei.browser&channelid=navigation&browserMode=day&poff=1"},
+    {"name" : "EMS",      "link" : "hap://app/com.youzheng.ems/"},
+    {"name" : "菜鸟",     "link" : "hap://app/com.cainiao.guoguoquickapp/"},
+  ]
+
+  function createRecord(record) {
+    var tr = document.createElement('TR');
+    var td_name = document.createElement('TD');
+    var td_link = document.createElement('TD');
+    td_name.innerText = record.name;
+    td_link.innerText = record.link;
+    tr.append(td_name);
+    tr.append(td_link);
+    tr.addEventListener('click', (e)=>{ tr.classList.add('clicked'); location.href = record.link; });
+    return tr;
+  }
+
+  function createRecords(records, cb, index) {
+    index = index || 0;
+    if (index >= records.length) {
+      return;
+    }
+    var tr = createRecord(records[index]);
+    cb(tr);
+    setTimeout(createRecords.bind(null, records, cb, index+1), 0);
+  }
+
+  function createTable(records) {
+    var table = document.createElement('TABLE');
+    createRecords(records, (tr) => {table.append(tr)});
+    return table;
+  }
+
+  function init() {
+    document.body.append(createTable(deepLinks));
+  }
+</script>
+</head>
+<body onload='init()'>
+  <div>
+  </div>
+</body>
+<html>
