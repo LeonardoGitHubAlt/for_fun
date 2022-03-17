@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, minimal-ui">
+<style>
+  body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  body > .container {
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  body > .container > button {
+    margin: 10px;
+  }
+  body > .video_container > video {
+    max-width: 100%;
+    max-height: 100%;
+  }
+</style>
+<script>
+  function createVideoAndPlay() {
+    var video = document.createElement('video');
+    video.src = 'https://www.w3schools.com/html/mov_bbb.mp4';
+    video.setAttribute('autoplay', '');
+    video.setAttribute('controls', '');
+    video.setAttribute('loop', '');
+
+    video.setAttribute("hbsautoplay", 'true');
+    video.setAttribute("hbs-autoplay", 'true');
+    video.setAttribute("hbs-fullscreentitle", '')
+    video.setAttribute("hbs-noshowcontrolsatstart", '');
+    video.setAttribute("hbs-showdefaultprogress", '');
+//    video.setAttribute("hbs-horizontalfullscreen", '');
+
+    var container = document.querySelector('.video_container');
+    container.setAttribute("hbs-horizontalfullscreen", '');
+    container.append(video);
+
+    video.play();
+  }
+
+  function testHbsHorizontalfullscreen() {
+    var video = document.querySelector('video');
+    video.parentElement.requestFullscreen();
+
+    var createExitFullscreenButton = ()=>{
+        var button = document.createElement('button');
+        button.addEventListener('click', (e)=>{
+                document.exitFullscreen();
+                e.currentTarget.remove();
+            });
+        button.innerText = 'Exit Fullscreen';
+        return button;
+    }
+    var exitFullscreenBtn = createExitFullscreenButton();
+    video.parentElement.append(exitFullscreenBtn);
+  }
+
+  function onSizeChanged() {
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+
+  function init() {
+    onSizeChanged();
+
+    document.title = 'Video Attributes Test';
+    createVideoAndPlay();
+
+    var button = document.querySelector('#test');
+    button.innerText = "Test 'hbs-horizontalfullscreen'";
+    button.addEventListener('click', (e) => {
+            testHbsHorizontalfullscreen();
+        });
+  }
+
+  window.addEventListener('load', init);
+  window.addEventListener('resize', onSizeChanged);
+
+</script>
+</head>
+<body>
+  <div class='container'>
+    <button id='test'></button>
+  </div>
+  <div class='container video_container'>
+  </div>
+</body>
+</html>
