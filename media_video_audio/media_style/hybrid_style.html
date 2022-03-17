@@ -29,6 +29,10 @@
   }
 </style>
 <script>
+  function getParamValue(param) {
+    let params = (new URL(document.location)).searchParams;
+    return params.get(param);
+  }
   function createVideoAndPlay() {
     var video = document.createElement('video');
     video.src = 'https://www.w3schools.com/html/mov_bbb.mp4';
@@ -47,6 +51,9 @@
     container.setAttribute("hbs-horizontalfullscreen", '');
     container.append(video);
 
+    if (getParamValue('withplay') == 'false') {
+        return;
+    }
     video.play();
   }
 
