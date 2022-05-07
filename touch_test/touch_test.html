@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1, maximum-scale=10, minimum-scale=1, width=device-width, minimal-ui">
+<style>
+body,html {
+  height: 100%;
+  margin: 0;
+  user-select:none;
+}
+
+* {
+  user-select:none;
+}
+
+.container > div {
+  display: flex;
+  justify-content: center;
+  border: 1px solid;
+  margin: 1px;
+}
+</style>
+<script>
+  function log(msg) {
+    console.log(msg);
+    var panel = document.querySelector('.container');
+    if (panel.childElementCount > 25) {
+        panel.removeChild(panel.firstChild);
+    }
+    var div = document.createElement('div');
+    div.innerText = msg;
+    panel.appendChild(div);
+  }
+  var dumpTouches = (touches)=>{
+      var msg = '[';
+      for (touch of touches) {
+        msg += '{'
+        msg += 'screenX: ' + parseInt(touch.screenX) + ',';
+        msg += 'screenY: ' + parseInt(touch.screenY) + ',';
+        msg += '},'
+      }
+      msg += ']';
+      return msg;
+    };
+  function init() {
+    document.body.addEventListener('contextmenu', function(e){
+        e.preventDefault();
+      });
+    document.addEventListener('contextmenu', function(e){
+        e.preventDefault();
+      });
+    ['touchstart', 'touchcancel', 'touchend'].forEach((event_name)=>{
+      document.addEventListener(event_name, (evt) => {
+        log(event_name + ', length:' + evt.touches.length);
+      }, false)
+    });
+  }
+</script>
+</head>
+<body onload='init()'>
+  <div class='container'></div>
+</body>
+</html>
+
