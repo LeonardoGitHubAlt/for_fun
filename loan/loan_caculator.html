@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name='viewport' content='width=device-width'>
+<style>
+  html, body {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+  }
+  tr {
+    height: 40px;
+  }
+  input {
+    width: 120px;
+  }
+  .divider {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+</style>
+<script>
+  function calc_fixed_pay_back(p, r, n) {
+    return p * r * Math.pow(1+r, n)/(Math.pow(1+r, n)-1);
+  }
+  function calc_normal(p, r, n) {
+    return p * Math.pow(1+r ,n) / n;
+  }
+  function fill_result(pay_per_month) {
+    var total = pay_per_month * n;
+    total = total / 10000;
+    var interest = total - p / 10000;
+    console.log(pay_per_month, total, interest);
+
+    document.querySelector('#total').value = total.toFixed(2);
+    document.querySelector('#payback_per_month').value = pay_per_month.toFixed(2);
+    document.querySelector('#interest').value = interest.toFixed(2);
+  }
+  function fill_params(p, r, n, b) {
+    document.querySelector('#principal').value = p;
+    document.querySelector('#rate').value = r;
+    document.querySelector('#terms').value = n;
+    document.querySelector('#back').value = b;
+  }
+  function get_params() {
+    var p = document.querySelector('#principal').value;
+    var pre = document.querySelector('#back').value;
+    pre = eval(pre) || 0;
+    p = p - pre;
+    p = p * 10000;
+    var r = document.querySelector('#rate').value;
+    r = r / 12. / 100;
+    var n = document.querySelector('#terms').value;
+    n = eval(n) || 0;
+    return [p, r, n];
+  }
+  function do_calc_fixed() {
+    [p, r, n] = get_params();
+    var pay_per_month = calc_fixed_pay_back(p, r, n);
+    fill_result(pay_per_month);
+  }
+  function do_calc_normal() {
+    [p, r, n] = get_params();
+    var pay_per_month = calc_normal(p, r, n);
+    fill_result(pay_per_month);
+  }
+  function do_clear(id) {
+    var element = document.querySelector(id);
+    element.value = '0';
+  }
+</script>
+</head>
+<body>
+  <div>
+    <table>
+      <tr>
+        <td>principal</td>
+        <td><input id='principal' value='0'>W</input></td>
+        <td><button onclick='do_clear("#principal")'>clear</button></td>
+      </tr>
+      <tr>
+        <td>rate</td>
+        <td><input id='rate' value='0'></input>%</td>
+        <td><button onclick='do_clear("#rate")'>clear</button></td>
+      </tr>
+      <tr>
+        <td>loan terms</td>
+        <td><input id='terms' value='0'></input>m</td>
+        <td><button onclick='do_clear("#terms")'>clear</button></td>
+      </tr>
+      <tr>
+        <td>pre pay back</td>
+        <td><input id='back' value='0'></input>W</td>
+        <td><button onclick='do_clear("#back")'>clear</button></td>
+      </tr>
+      <tr>
+        <td colspan='3'>
+          <div class='divider'>
+            <button onclick='do_calc_fixed()'>fixed_pay_back</button>
+            <button onclick='do_calc_normal()'>normal_pay_back</button>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>total</td><td><input disabled id='total'></span>W</td>
+      </tr>
+      <tr>
+        <td>payback per month</td><td><input disabled id='payback_per_month'></span></td>
+      </tr>
+      <tr>
+        <td>interest</td><td><input disabled id='interest'></span>W</td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>
