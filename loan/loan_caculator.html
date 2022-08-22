@@ -9,9 +9,15 @@
   body {
     margin: 0;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: space-evenly;
     align-items: center;
   }
+
+  body > table {
+    width: 80%;
+  }
+
   table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
@@ -51,6 +57,37 @@
     document.querySelector('#terms').value = n;
     document.querySelector('#back').value = b;
   }
+  function dump_interest_per_month(p, x, rate, n) {
+    let table = document.createElement('table');
+    if (n > 5) {
+      n = 5;
+    }
+    let row = table.insertRow();
+    let cell_month = row.insertCell();
+    let cell_interest = row.insertCell();
+    let cell_principal = row.insertCell();
+    cell_month.innerHTML = 'month';
+    cell_interest.innerHTML = 'interest';
+    cell_principal.innerHTML = 'principal';
+    for (let i = 0; i < n; ++i) {
+      interest = p * rate;
+      principal = x - p * rate;
+      p = p - principal;
+      let row = table.insertRow();
+      let cell_month = row.insertCell();
+      let cell_interest = row.insertCell();
+      let cell_principal = row.insertCell();
+      cell_month.innerHTML = '' + i;
+      cell_interest.innerHTML = '' + interest.toFixed(2);
+      cell_principal.innerHTML = '' + principal.toFixed(2);
+    }
+    document.body.append(table);
+  }
+  function clear_table() {
+    while (document.body.childElementCount > 1) {
+      document.body.children[document.body.childElementCount - 1].remove();
+    }
+  }
   function get_params() {
     var p = document.querySelector('#principal').value;
     var pre = document.querySelector('#back').value;
@@ -64,16 +101,20 @@
     return [p, r, n];
   }
   function do_calc_fixed() {
+    clear_table();
     [p, r, n] = get_params();
     var pay_per_month = calc_fixed_pay_back(p, r, n);
     fill_result(pay_per_month);
+    dump_interest_per_month(p, pay_per_month, r, n);
   }
   function do_calc_normal() {
+    clear_table();
     [p, r, n] = get_params();
     var pay_per_month = calc_normal(p, r, n);
     fill_result(pay_per_month);
   }
   function do_clear(id) {
+    clear_table();
     var element = document.querySelector(id);
     element.value = '0';
   }
