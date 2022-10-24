@@ -35,51 +35,67 @@
   }
 </style>
 <script>
+  const max_dump_months = 5;
   function calc_fixed_pay_back(p, r, n) {
-    return p * r * Math.pow(1+r, n)/(Math.pow(1+r, n)-1);
+    var pay_back_per_month = p * r * Math.pow(1+r, n)/(Math.pow(1+r, n)-1);
+    var total = pay_back_per_month * n;
+    var interest = total - p;
+    var details = [];
+    for (var i = 0; i < n; i++) {
+      if (i >= max_dump_months) {
+        break;
+      }
+      var interest_per_month = p * r;
+      var principal_per_month = pay_back_per_month - p * r;
+      p = p - principal_per_month;
+      details.push([principal_per_month, interest_per_month]);
+    }
+    return [total, interest, pay_back_per_month, details];
+  }
+  function calc_fixed_principal(p, r, n) {
+    var interest = 0;
+    var details = [];
+    for (var i = 0; i < n; ++i) {
+      var interest_per_month = (p - (p/n)*i) * r;
+      interest += interest_per_month;
+      if (details.length < max_dump_months) {
+        details.push([p/n, interest_per_month]);
+      }
+    }
+    var total = p + interest;
+    return [total, interest, NaN, details];
   }
   function calc_normal(p, r, n) {
-    return p * Math.pow(1+r ,n) / n;
+    var total = p * Math.pow(1+r ,n);
+    var interest = total - p;
+    return [total, interest, total / n, []];
   }
-  function fill_result(pay_per_month) {
-    var total = pay_per_month * n;
-    total = total / 10000;
-    var interest = total - p / 10000;
+  function fill_result(total, interest, pay_per_month) {
     console.log(pay_per_month, total, interest);
 
-    document.querySelector('#total').value = total.toFixed(2);
+    document.querySelector('#total').value = (total/10000).toFixed(2);
     document.querySelector('#payback_per_month').value = pay_per_month.toFixed(2);
-    document.querySelector('#interest').value = interest.toFixed(2);
+    document.querySelector('#interest').value = (interest/10000).toFixed(2);
   }
-  function fill_params(p, r, n, b) {
-    document.querySelector('#principal').value = p;
-    document.querySelector('#rate').value = r;
-    document.querySelector('#terms').value = n;
-    document.querySelector('#back').value = b;
-  }
-  function dump_interest_per_month(p, x, rate, n) {
-    let table = document.createElement('table');
-    if (n > 5) {
-      n = 5;
+  function dump_interest_per_month(details) {
+    var createCell = function(row, value) {
+        let cell = row.insertCell();
+        cell.innerHTML = '' + value;
+        return cell;
     }
+    let table = document.createElement('table');
     let row = table.insertRow();
-    let cell_month = row.insertCell();
-    let cell_interest = row.insertCell();
-    let cell_principal = row.insertCell();
-    cell_month.innerHTML = 'month';
-    cell_interest.innerHTML = 'interest';
-    cell_principal.innerHTML = 'principal';
-    for (let i = 0; i < n; ++i) {
-      interest = p * rate;
-      principal = x - p * rate;
-      p = p - principal;
+    createCell(row, 'month');
+    createCell(row, 'total');
+    createCell(row, 'principal');
+    createCell(row, 'interest');
+    for (let i = 0; i < details.length; ++i) {
+      let [principal, interest] = details[i];
       let row = table.insertRow();
-      let cell_month = row.insertCell();
-      let cell_interest = row.insertCell();
-      let cell_principal = row.insertCell();
-      cell_month.innerHTML = '' + i;
-      cell_interest.innerHTML = '' + interest.toFixed(2);
-      cell_principal.innerHTML = '' + principal.toFixed(2);
+      createCell(row, i+1);
+      createCell(row, (interest + principal).toFixed(2));
+      createCell(row, principal.toFixed(2));
+      createCell(row, interest.toFixed(2));
     }
     document.body.append(table);
   }
@@ -100,18 +116,25 @@
     n = eval(n) || 0;
     return [p, r, n];
   }
-  function do_calc_fixed() {
+  function do_calc_fixed_pay_back() {
     clear_table();
-    [p, r, n] = get_params();
-    var pay_per_month = calc_fixed_pay_back(p, r, n);
-    fill_result(pay_per_month);
-    dump_interest_per_month(p, pay_per_month, r, n);
+    var [p, r, n] = get_params();
+    var [total, interest, pay_back_per_month, details] = calc_fixed_pay_back(p, r, n);
+    fill_result(total, interest, pay_back_per_month);
+    dump_interest_per_month(details);
+  }
+  function do_calc_fixed_principal() {
+    clear_table();
+    var [p, r, n] = get_params();
+    var [total, interest, pay_back_per_month, details] = calc_fixed_principal(p, r, n);
+    fill_result(total, interest, pay_back_per_month);
+    dump_interest_per_month(details);
   }
   function do_calc_normal() {
     clear_table();
-    [p, r, n] = get_params();
-    var pay_per_month = calc_normal(p, r, n);
-    fill_result(pay_per_month);
+    var [p, r, n] = get_params();
+    var [total, interest, pay_back_per_month, details] = calc_normal(p, r, n);
+    fill_result(total, interest, pay_back_per_month);
   }
   function do_clear(id) {
     clear_table();
@@ -146,7 +169,8 @@
       <tr>
         <td colspan='3'>
           <div class='divider'>
-            <button onclick='do_calc_fixed()'>fixed_pay_back</button>
+            <button onclick='do_calc_fixed_pay_back()'>fixed_pay_back</button>
+            <button onclick='do_calc_fixed_principal()'>fixed_principal</button>
             <button onclick='do_calc_normal()'>normal_pay_back</button>
           </div>
         </td>
