@@ -44,6 +44,13 @@
   }
 </style>
 <script>
+  function getParam(name, default_value) {
+    var result = window.location.search.match('[?&]' + name + '=([^&]*)&*');
+    if (result && result.length >= 2) {
+      return result[1];
+    }
+    return default_value;
+  }
   function getPosition(cell) {
     var pos = cell.getAttribute('id').split('_');
     var x = parseInt(pos[0]);
@@ -84,7 +91,7 @@
     });
   }
   function init() {
-    const table_size = 8;
+    const table_size = parseInt(getParam('size', 6)) || 6;
     var table = document.createElement('table');
     for (var i = 0; i < table_size; i++) {
       let line = table.insertRow();
