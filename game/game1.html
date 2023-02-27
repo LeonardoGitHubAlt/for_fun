@@ -11,18 +11,22 @@
     justify-content: center;
     align-items: center;
   }
+  body table {
+    width: 80vw;
+    height: 80vh;
+    max-width: 80vh;
+    max-height: 80vw;
+  }
   table td {
-    width: 30px;
-    height: 34px;
     border: 1px solid #afafaf;
   }
-  table td.inner {
+  body.help table td.inner {
     border: 1px #000000 solid;
   }
   table td.input {
     background: black !important;
   }
-  table td:not([count="0"]) {
+  body.help table td:not([count="0"]) {
     background: #ccc;
   }
   .shake {
@@ -44,7 +48,11 @@
   }
 </style>
 <script>
-  function getParam(name, default_value) {
+  function hasParam(name) {
+    var result = window.location.search.match('[?&]' + name + '($|[&=])');
+    return !!result;
+  }
+  function getParamValue(name, default_value) {
     var result = window.location.search.match('[?&]' + name + '=([^&]*)&*');
     if (result && result.length >= 2) {
       return result[1];
@@ -90,8 +98,12 @@
       });
     });
   }
-  function init() {
-    const table_size = parseInt(getParam('size', 6)) || 6;
+  function setupHelper() {
+    if (hasParam('help')) {
+      document.body.classList.add('help');
+    }
+  }
+  function createTable(table_size) {
     var table = document.createElement('table');
     for (var i = 0; i < table_size; i++) {
       let line = table.insertRow();
@@ -124,7 +136,12 @@
         });
       }
     }
-    document.body.append(table);
+    return table;
+  }
+  function init() {
+    setupHelper();
+    const table_size = parseInt(getParamValue('size', 6)) || 6;
+    document.body.append(createTable(table_size));
   }
   window.addEventListener('load', init);
 </script>
