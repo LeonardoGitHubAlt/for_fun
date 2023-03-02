@@ -1,0 +1,284 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, minimal-ui">
+<style>
+  html, body {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+  }
+  .workspace {
+    margin-top: 10px;
+  }
+  .table > div > div {
+    display: inline-block;
+    width: 8vw;
+    height: 8vw;
+  }
+  .table > div {
+    height: 8vw;
+    box-sizing: border-box;
+  }
+  .table, .table > div > div {
+    border: 1px solid #aaa;
+    box-sizing: border-box;
+  }
+  .container > .table {
+    border: unset;
+    white-space: nowrap;
+  }
+
+  .container > .table > div {
+    overflow: hidden;
+  }
+  .container > .table > div > div {
+    border: unset;
+    background: #ebebeb;
+  }
+  .container td {
+    border: 1px solid #aaa;
+  }
+  .invisible {
+    opacity: 0;
+  }
+  .moving {
+    opacity: 0.7;
+    z-index: 100;
+  }
+
+  .gameover {
+    animation: tored 3s forwards;
+  }
+
+  @keyframes tored {
+    100% { background-color: #ff98a8; }
+  }
+</style>
+<script>
+  var pieces = [
+    {
+      cells: [
+        [0, 1, 1, 0, 0],
+        [1, 1, 1, 1, 0],
+        [0, 1, 1, 1, 0],
+        [0, 0, 1, 1, 1],
+        [0, 0, 0, 1, 1],
+      ],
+      color: '#dbdb9a',
+      target_pos: {x: 0, y: 2},
+      matched: false,
+    },
+    {
+      cells: [
+        [0, 1, 1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0, 0, 1],
+        [1, 0, 0, 1, 1, 1, 1],
+      ],
+      color: '#db9adb',
+      target_pos: {x: 0, y: 0},
+      matched: false,
+    },
+    {
+      cells: [
+        [0, 0, 1, 1],
+        [0, 1, 1, 1],
+        [0, 1, 1, 0],
+        [1, 1, 0, 0],
+      ],
+      color: '#9adbdb',
+      target_pos: {x: 4, y: 4},
+      matched: false,
+    },
+    {
+      cells: [
+        [0, 0, 0, 1, 1, 0],
+        [0, 0, 0, 1, 1, 1],
+        [0, 0, 0, 0, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [1, 1, 0, 0, 1, 0],
+      ],
+      color: '#9dbdba',
+      target_pos: {x: 4, y: 0},
+      matched: false,
+    },
+  ];
+  var cell_size_notifier = (function() {
+    let listeners = [];
+    let size = {width: 1, height: 1};
+    return {
+      registerCellSizeChange: (callback) => {
+        listeners.push(callback);
+      },
+      setNewSize: (width, height)=>{
+        size.width = width;
+        size.height = height;
+        for (let listener of listeners) {
+          listener(size);
+        }
+      },
+    };
+  })();
+  function buildTable({width, height}, table, cell_cb) {
+    for (let i = 0; i < height; i++) {
+      let line = document.createElement('div');
+      table.append(line);
+      for (let j = 0; j < width; j++) {
+        let cell = document.createElement('div');
+        line.append(cell);
+        if (cell_cb) {
+          cell_cb(cell, {x: j, y: i});
+        }
+      }
+    }
+  }
+  function buildWorkSpace(workspace) {
+    const width = 10;
+    const height = 8;
+    buildTable({width, height}, workspace);
+
+    workspace.classList.add('table');
+
+    var resize_observer = new ResizeObserver((entries => {
+      workspace.style.height = parseInt(workspace.clientWidth * height / width) + 'px';
+//      cell = workspace.querySelector('.table > div > div');
+//      cell_size_notifier.setNewSize(cell.clientWidth, cell.clientHeight);
+    }));
+    resize_observer.observe(workspace);
+  }
+  function checkGameOver() {
+    let success = true;
+    for (let p of pieces) {
+      if (!p.matched) {
+        success = false;
+       break;
+      }
+    }
+    return success;
+  }
+  function gameOver() {
+    let container = document.querySelector('.container');
+    for (let table of container.children) {
+      for (let row of table.children) {
+        for (let cell of row.children) {
+          cell.classList.add('gameover');
+        }
+      }
+    }
+  }
+  function createDragManager(table, piece) {
+    let start_pos = {x: -1, y: -1};
+    let last_touch_pos = {x: -1, y: -1};
+    let draging_pos = {x: -1, y: -1};
+    let target_pos_index = piece.target_pos;
+    function setTablePos(table, {x, y}) {
+      table.style.position = 'fixed';
+      table.style.left = x + 'px';
+      table.style.top = y + 'px';
+    }
+    function checkPos(index_x, index_y) {
+      if (target_pos_index.x == index_x && target_pos_index.y == index_y) {
+        piece.matched = true;
+      }
+      if (checkGameOver()) {
+        gameOver();
+      }
+    }
+    return {
+      drag_start: (x, y)=>{
+        start_pos.x = x;
+        start_pos.y = y;
+        last_touch_pos.x = x;
+        last_touch_pos.y = y;
+
+        let rect = table.getClientRects()[0];
+        draging_pos.x = rect.left;
+        draging_pos.y = rect.top;
+        setTablePos(table, draging_pos);
+        table.classList.add('moving');
+
+        piece.matched = false;
+
+      },
+      draging: (x, y)=>{
+        let delta_x = x - last_touch_pos.x;
+        let delta_y = y - last_touch_pos.y;
+        last_touch_pos.x = x;
+        last_touch_pos.y = y;
+        draging_pos.x += delta_x;
+        draging_pos.y += delta_y;
+        setTablePos(table, draging_pos);
+      },
+      drag_end: ()=>{
+        table.classList.remove('moving');
+        let workspace = document.querySelector('.workspace');
+        let index_y = -1;
+        for (let line of workspace.children) {
+          ++index_y;
+          let index_x = -1;
+          for (let wp_cell of line.children) {
+            ++index_x;
+            let cell_rect = wp_cell.getClientRects()[0];
+            if (cell_rect.left < draging_pos.x && draging_pos.x < cell_rect.right &&
+                cell_rect.top < draging_pos.y && draging_pos.y < cell_rect.bottom) {
+              setTablePos(table, {x: cell_rect.left, y: cell_rect.top});
+              checkPos(index_x, index_y);
+            }
+          }
+        }
+      }
+    };
+  }
+  function createPart(piece) {
+    var table = document.createElement('div');
+    table.classList.add('table');
+    let drag_manager = createDragManager(table, piece);
+    buildTable({width: piece.cells[0].length, height: piece.cells.length}, table, (cell, pos)=>{
+//      cell_size_notifier.registerCellSizeChange(({width, height})=>{
+//        cell.style.width = width + 'px';
+//        cell.style.height = height + 'px';
+//      });
+      if (piece.cells[pos.y][pos.x] == 0) {
+        cell.classList.add('invisible');
+      } else {
+        cell.addEventListener('touchstart', (e)=>{
+          drag_manager.drag_start(e.touches[0].clientX, e.touches[0].clientY);
+          e.preventDefault();
+        });
+        cell.addEventListener('touchmove', (e)=>{
+          drag_manager.draging(e.touches[0].clientX, e.touches[0].clientY);
+          e.preventDefault();
+        });
+        cell.addEventListener('touchend', (e)=>{
+          drag_manager.drag_end();
+          e.preventDefault();
+        });
+        cell.style.backgroundColor = piece.color;
+      }
+    });
+    return table;
+  }
+  function buildContainer(container) {
+    for (let piece of pieces) {
+      container.append(createPart(piece));
+    }
+  }
+  function init() {
+    var workspace = document.querySelector('.workspace');
+    buildWorkSpace(workspace);
+    var container = document.querySelector('.container');
+    buildContainer(container);
+  }
+  window.addEventListener('DOMContentLoaded', init);
+</script>
+</head>
+<body>
+<div class='workspace'></div>
+<div class='container'></div>
+</body>
+</html>
