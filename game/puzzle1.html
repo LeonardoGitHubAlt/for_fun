@@ -55,9 +55,15 @@
   .gameover {
     animation: tored 3s forwards;
   }
+  .workspace.gameover {
+    animation: toinvisible 3s forwards;
+  }
 
   @keyframes tored {
     100% { background-color: #ff98a8; }
+  }
+  @keyframes toinvisible {
+    100% { opacity: 0; }
   }
 </style>
 <script>
@@ -170,6 +176,8 @@
         }
       }
     }
+    let workspace = document.querySelector('.workspace');
+    workspace.classList.add('gameover');
   }
   function createDragManager(table, piece) {
     let start_pos = {x: -1, y: -1};
