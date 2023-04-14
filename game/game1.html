@@ -29,6 +29,19 @@
   body.help table td:not([count="0"]) {
     background: #ccc;
   }
+  .gameover {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgb(199, 4, 179);
+    font-size: 2em;
+    font-weight: 900;
+    background: rgba(237, 225, 236, 0.9);
+    animation: show_in 1s;
+  }
   .shake {
     animation: shake 0.1s;
     animation-iteration-count: 3;
@@ -45,6 +58,10 @@
     80% { transform: translate(-1px, -1px) rotate(1deg); }
     90% { transform: translate(1px, 2px) rotate(0deg); }
     100% { transform: translate(1px, -2px) rotate(-1deg); }
+  }
+  @keyframes show_in {
+    0% { opacity : 0; }
+    100% { opacity : 1; }
   }
 </style>
 <script>
@@ -103,8 +120,15 @@
       document.body.classList.add('help');
     }
   }
+  function gameover() {
+    var win_div = document.createElement('div');
+    win_div.classList.add('gameover');
+    win_div.innerText = 'You Win !'
+    document.body.append(win_div);
+  }
   function createTable(table_size) {
     var table = document.createElement('table');
+    var wait_for_win = table_size;
     for (var i = 0; i < table_size; i++) {
       let line = table.insertRow();
       for (var j = 0; j < table_size; j++) {
@@ -121,6 +145,7 @@
               var count = parseInt(matched.getAttribute('count'));
               matched.setAttribute('count', count-1);
             });
+            wait_for_win++;
           } else {
             var clickable = parseInt(cell.getAttribute('count')) == 0;
             if (!clickable) {
@@ -132,6 +157,10 @@
               var count = parseInt(matched.getAttribute('count'));
               matched.setAttribute('count', count+1);
             });
+            wait_for_win--;
+            if (wait_for_win == 0) {
+                gameover();
+            }
           }
         });
       }
